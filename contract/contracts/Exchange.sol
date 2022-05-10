@@ -7,10 +7,21 @@ import "@klaytn/contracts/token/KIP7/IKIP7.sol";
 contract Exchange {
   address public tokenAddress;
 
-  constructor(address _token) public {
+//   constructor(address _token) public payable {
+//     require(_token != address(0), "invalid token address");
+//     tokenAddress = _token;
+// }
+
+    event FallbackCalled(uint amount);
+
+    function () external payable {
+    emit FallbackCalled(msg.value);
+}
+
+  function setToken(address _token) public payable {
     require(_token != address(0), "invalid token address");
     tokenAddress = _token;
-  }
+}
 
     function addLiquidity(uint256 _tokenAmount) public payable {
     KIP7 token = KIP7(tokenAddress);
@@ -20,6 +31,10 @@ contract Exchange {
 
     function getReserve() public view returns (uint256 balance) {
     balance =  KIP7(tokenAddress).balanceOf(address(this)); 
+}
+
+    function getklay() public view returns (uint256 balance) {
+    balance =  address(this).balance;
 }
 
     function getTokenAmount(uint256 _klaySold) public view returns (uint256) { // klay의 양을 받고 교환해 줄 토큰의 양을 출력하는 함수
