@@ -9,17 +9,17 @@ contract Exchange {
 
   constructor(address _token) public {
     require(_token != address(0), "invalid token address");
-
     tokenAddress = _token;
   }
 
     function addLiquidity(uint256 _tokenAmount) public payable {
     KIP7 token = KIP7(tokenAddress);
-    token.transferFrom(msg.sender, address(this), _tokenAmount); // approve 아직 되지 않음
+    token.approve(address(this), _tokenAmount);
+    token.transferFrom(msg.sender, address(this), _tokenAmount); // caver-js로 owner를 지갑 주소로 해서 실험해 볼 것
 }
 
     function getReserve() public view returns (uint256 balance) {
-    balance =  KIP7(tokenAddress).balanceOf(msg.sender); // Truffle BN 문제가 있음
+    balance =  KIP7(tokenAddress).balanceOf(address(this)); 
 }
 
     function getTokenAmount(uint256 _klaySold) public view returns (uint256) { // klay의 양을 받고 교환해 줄 토큰의 양을 출력하는 함수
@@ -52,6 +52,7 @@ contract Exchange {
 }
 
     function tokenToklaySwap(uint256 _tokensSold, uint256 _minklay) public {
+
     uint256 tokenReserve = getReserve(); // 풀에 있는 토큰의 양
     uint256 klayBought = getAmount(
     _tokensSold, // 입급한 토큰의 양
@@ -62,7 +63,7 @@ contract Exchange {
     require(klayBought >= _minklay, "insufficient output amount");
 
     KIP7(tokenAddress).transferFrom(msg.sender, address(this), _tokensSold); // msg.sender에게 컨트랙트 주소로 토큰을 보내게 한다.
-    // payable(msg.sender).transfer(klayBought); // msg.sender에게 klaybought 만큼의 클레이를 보내 준다.
+    msg.sender.transfer(klayBought); // msg.sender에게 klaybought 만큼의 클레이를 보내 준다.
 }
 
     function getAmount( // x(지불할 토큰)의 양을 넣으면 교환해 줄 y의 양을 출력하는 함수
